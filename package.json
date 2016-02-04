@@ -55,6 +55,7 @@
   "dependencies": {
     "bpmn-js": "^0.12.1",
     "diagram-js": "^0.12.1",
+    "ids": "^0.1.2",
     "inherits": "^2.0.1",
     "lessify": "^1.0.1",
     "lodash": "^3.0.1",
