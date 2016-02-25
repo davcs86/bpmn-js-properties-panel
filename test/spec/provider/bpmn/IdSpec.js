@@ -8,6 +8,7 @@ var TestContainer = require('mocha-test-container-support');
 
 var propertiesPanelModule = require('../../../../lib'),
   domQuery = require('min-dom/lib/query'),
+  domClasses = require('min-dom/lib/classes'),
   coreModule = require('bpmn-js/lib/core'),
   selectionModule = require('diagram-js/lib/features/selection'),
   modelingModule = require('bpmn-js/lib/features/modeling'),
@@ -24,7 +25,10 @@ describe('id-properties', function() {
     propertiesProviderModule
   ];
 
-  var container;
+  var container,
+      shape,
+      textField,
+      businessObject;
 
   beforeEach(function() {
     container = TestContainer.get(this);
@@ -35,7 +39,7 @@ describe('id-properties', function() {
   }));
 
 
-  beforeEach(inject(function(commandStack) {
+  beforeEach(inject(function(commandStack, propertiesPanel, selection, elementRegistry) {
 
     var undoButton = document.createElement('button');
     undoButton.textContent = 'UNDO';
@@ -45,138 +49,145 @@ describe('id-properties', function() {
     });
 
     container.appendChild(undoButton);
-  }));
-
-  it('should fetch the id for an element',
-      inject(function(propertiesPanel, selection, elementRegistry) {
 
     propertiesPanel.attachTo(container);
 
-    var shape = elementRegistry.get('ServiceTask_1');
+    shape = elementRegistry.get('StartEvent_1');
     selection.select(shape);
 
-    var textField = domQuery('input[name=id]', propertiesPanel._container),
-        businessObject = getBusinessObject(shape);
+    textField = domQuery('input[name=id]', propertiesPanel._container);
+    businessObject = getBusinessObject(shape);
+  }));
 
+
+  it('should fetch the id for an element', inject(function(propertiesPanel) {
+
+    // when selecting element
+
+    // then
     expect(textField.value).to.equal(businessObject.get('id'));
   }));
 
-  it('should set the id for an element',
-      inject(function(propertiesPanel, selection, elementRegistry) {
 
-    propertiesPanel.attachTo(container);
+  describe('set', function() {
 
-    var shape = elementRegistry.get('StartEvent_1');
-    selection.select(shape);
+    it('should set the id for an element', inject(function(propertiesPanel) {
 
-    var textField = domQuery('input[name=id]', propertiesPanel._container),
-        businessObject = getBusinessObject(shape);
+      // assume
+      expect(textField.value).to.equal('StartEvent_1');
 
-    // given
-    expect(textField.value).to.equal('StartEvent_1');
+      // when
+      TestHelper.triggerValue(textField, 'foo', 'change');
 
-    // when
-    TestHelper.triggerValue(textField, 'foo', 'change');
+      // then
+      expect(textField.value).to.equal('foo');
+      expect(businessObject.get('id')).to.equal('foo');
+    }));
 
-    // then
-    expect(textField.value).to.equal('foo');
-    expect(businessObject.get('id')).to.equal('foo');
-  }));
 
-  it('should not remove the id for an element',
-      inject(function(propertiesPanel, selection, elementRegistry) {
+    it('should not remove the id for an element', inject(function(propertiesPanel) {
 
-    propertiesPanel.attachTo(container);
+      // assume
+      expect(textField.value).to.equal('StartEvent_1');
 
-    var shape = elementRegistry.get('ServiceTask_1');
-    selection.select(shape);
+      // when
+      TestHelper.triggerValue(textField, '', 'change');
 
-    var textField = domQuery('input[name=id]', propertiesPanel._container);
-    var businessObject = getBusinessObject(shape);
+      // then
+      expect(businessObject.get('id')).to.equal('StartEvent_1');
+    }));
 
-    // given
-    expect(textField.value).to.equal('ServiceTask_1');
 
-    // when
-    TestHelper.triggerValue(textField, '', 'change');
+    it('should not set the id with a space for an element', inject(function(propertiesPanel) {
 
-    // then
-    var errorMessages = domQuery.all('.pp-error-message', propertiesPanel._container);
+      // assume
+      expect(textField.value).to.equal('StartEvent_1');
 
-    expect(textField.value).to.equal('');
-    expect(textField.getAttribute('class')).to.equal('invalid');
-    expect(errorMessages).to.have.length(1);
-    expect(errorMessages[0].textContent).to.equal('Element must have an unique id.');
-    expect(businessObject.get('id')).to.equal('ServiceTask_1');
-  }));
+      // when
+      TestHelper.triggerValue(textField, 'foo bar', 'change');
 
-  it('should set the id with a space for an element',
-      inject(function(propertiesPanel, selection, elementRegistry) {
+      // then
+      expect(businessObject.get('id')).to.equal('StartEvent_1');
+    }));
 
-    propertiesPanel.attachTo(container);
+    it('should not set invalid QName id for an element', inject(function(propertiesPanel) {
 
-    var shape = elementRegistry.get('StartEvent_1');
-    selection.select(shape);
+      // assume
+      expect(textField.value).to.equal('StartEvent_1');
 
-    var textField = domQuery('input[name=id]', propertiesPanel._container),
-        businessObject = getBusinessObject(shape);
+      // when
+      TestHelper.triggerValue(textField, '::FOO', 'change');
 
-    // given
-    expect(textField.value).to.equal('StartEvent_1');
+      // then
+      expect(businessObject.get('id')).to.equal('StartEvent_1');
+    }));
 
-    // when
-    TestHelper.triggerValue(textField, 'foo bar', 'change');
+    it('should not set invalid HTML characters id for an element', inject(function(propertiesPanel) {
 
-    // then
-    expect(textField.className).to.equal('invalid');
-    expect(textField.value).to.equal('foo bar');
-    expect(businessObject.get('id')).to.equal('StartEvent_1');
-  }));
+      // assume
+      expect(textField.value).to.equal('StartEvent_1');
 
-  it('should set invalid QName id for an element',
-      inject(function(propertiesPanel, selection, elementRegistry) {
+      // when
+      TestHelper.triggerValue(textField, '<hello>', 'change');
 
-    propertiesPanel.attachTo(container);
+      // then
+      expect(businessObject.get('id')).to.equal('StartEvent_1');
+    }));
 
-    var shape = elementRegistry.get('StartEvent_1');
-    selection.select(shape);
+  });
 
-    var textField = domQuery('input[name=id]', propertiesPanel._container),
-        businessObject = getBusinessObject(shape);
 
-    // given
-    expect(textField.value).to.equal('StartEvent_1');
+  describe('validation errors', function() {
 
-    // when
-    TestHelper.triggerValue(textField, '::FOO', 'change');
+    it('should not be shown if id is valid', function() {
 
-    // then
-    expect(textField.className).to.equal('invalid');
-    expect(textField.value).to.equal('::FOO');
-    expect(businessObject.get('id')).to.equal('StartEvent_1');
-  }));
+      // when
+      TestHelper.triggerValue(textField, 'foo', 'change');
 
-  it('should set invalid HTML characters id for an element',
-      inject(function(propertiesPanel, selection, elementRegistry) {
+      // then
+      expect(domClasses(textField).has('invalid')).to.be.false;
+    });
 
-    propertiesPanel.attachTo(container);
 
-    var shape = elementRegistry.get('StartEvent_1');
-    selection.select(shape);
+    it('should be shown if id gets removed', function() {
 
-    var textField = domQuery('input[name=id]', propertiesPanel._container),
-        businessObject = getBusinessObject(shape);
+      // when
+      TestHelper.triggerValue(textField, '', 'change');
 
-    // given
-    expect(textField.value).to.equal('StartEvent_1');
+      // then
+      expect(domClasses(textField).has('invalid')).to.be.true;
+    });
 
-    // when
-    TestHelper.triggerValue(textField, '<hello>', 'change');
 
-    // then
-    expect(textField.className).to.equal('invalid');
-    expect(textField.value).to.equal('<hello>');
-    expect(businessObject.get('id')).to.equal('StartEvent_1');
-  }));
+    it('should be shown if id contains space', function() {
+
+      // when
+      TestHelper.triggerValue(textField, 'foo bar', 'change');
+
+      // then
+      expect(domClasses(textField).has('invalid')).to.be.true;
+    });
+
+
+    it('should be shown if id is invalid QName', function() {
+
+      // when
+      TestHelper.triggerValue(textField, '::FOO', 'change');
+
+      // then
+      expect(domClasses(textField).has('invalid')).to.be.true;
+    });
+
+
+    it('should be shown if id contains HTML characters', function() {
+
+      // when
+      TestHelper.triggerValue(textField, '<hello>', 'change');
+
+      // then
+      expect(domClasses(textField).has('invalid')).to.be.true;
+    });
+
+  });
 
 });

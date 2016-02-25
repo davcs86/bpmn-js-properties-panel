@@ -36,7 +36,7 @@ describe('decision-business-rule-task-properties', function() {
     moddleExtensions: {camunda: camundaModdlePackage}
   }));
 
-  beforeEach(inject(function(commandStack) {
+  beforeEach(inject(function(commandStack, propertiesPanel) {
 
     var undoButton = document.createElement('button');
     undoButton.textContent = 'UNDO';
@@ -46,37 +46,37 @@ describe('decision-business-rule-task-properties', function() {
     });
 
     container.appendChild(undoButton);
+
+    propertiesPanel.attachTo(container);
   }));
+
 
   it('should fetch properties of decision business rule task',
         inject(function(propertiesPanel, selection, elementRegistry) {
 
-    propertiesPanel.attachTo(container);
-
     var shape = elementRegistry.get('BusinessRuleTask_1');
     selection.select(shape);
 
-    var decisionRefField = domQuery('input[name=decisionRefValue]', propertiesPanel._container),
-    	resultVariable = domQuery('input[name=dmnResultVariable]', propertiesPanel._container),
+    var decisionRefField = domQuery('input[name=callableElementRef]', propertiesPanel._container),
+    	resultVariable = domQuery('div[data-entry=dmn-result-variable] input[name=resultVariable]', propertiesPanel._container),
     	implType = TestHelper.selectedByIndex(domQuery('select[name=implType]', propertiesPanel._container)),
         businessObject = getBusinessObject(shape);
 
-    expect(implType.value).to.equal('decisionRef');
+    expect(implType.value).to.equal('dmn');
     expect(decisionRefField.value).to.equal('Bar');
     expect(decisionRefField.value).to.equal(businessObject.get('camunda:decisionRef'));
     expect(resultVariable.value).to.equal('resVar');
     expect(resultVariable.value).to.equal(businessObject.get('camunda:resultVariable'));
   }));
 
+
   it('should fill decisionRef field for an element',
         inject(function(propertiesPanel, selection, elementRegistry) {
-
-    propertiesPanel.attachTo(container);
 
     var shape = elementRegistry.get('BusinessRuleTask_Empty');
     selection.select(shape);
 
-    var decisionRefField = domQuery('input[name=decisionRefValue]', propertiesPanel._container),
+    var decisionRefField = domQuery('input[name=callableElementRef]', propertiesPanel._container),
     	implType = domQuery('select[name=implType]', propertiesPanel._container),
         businessObject = getBusinessObject(shape);
 
@@ -92,20 +92,19 @@ describe('decision-business-rule-task-properties', function() {
     TestHelper.triggerValue(decisionRefField, 'foo');
 
     // then
-    expect(implType.value).to.equal('decisionRef');
+    expect(implType.value).to.equal('dmn');
     expect(decisionRefField.value).to.equal('foo');
     expect(decisionRefField.value).to.equal(businessObject.get('camunda:decisionRef'));
   }));
 
+
   it('remove decisionRef field is not necessary for an element',
         inject(function(propertiesPanel, selection, elementRegistry) {
-
-    propertiesPanel.attachTo(container);
 
     var shape = elementRegistry.get('BusinessRuleTask_1');
     selection.select(shape);
 
-    var decisionRefField = domQuery('input[name=decisionRefValue]', propertiesPanel._container),
+    var decisionRefField = domQuery('input[name=callableElementRef]', propertiesPanel._container),
     	implType = domQuery('select[name=implType]', propertiesPanel._container),
         businessObject = getBusinessObject(shape);
 
@@ -116,22 +115,21 @@ describe('decision-business-rule-task-properties', function() {
     TestHelper.triggerValue(decisionRefField, '');
 
     // then
-    expect(implType.value).to.equal('decisionRef');
+    expect(implType.value).to.equal('dmn');
     expect(decisionRefField.value).to.equal('');
     expect(decisionRefField.className).to.equal('invalid');
-    expect(decisionRefField.value).to.not.equal(businessObject.get('camunda:decisionRef'));
+    expect(businessObject.get('camunda:decisionRef')).to.equal('');
   }));
+
 
   it('should exist default value "latest" for decision ref binding for an element',
         inject(function(propertiesPanel, selection, elementRegistry) {
-
-    propertiesPanel.attachTo(container);
 
     var shape = elementRegistry.get('BusinessRuleTask_Empty');
     selection.select(shape);
 
     var implType = domQuery('select[name=implType]', propertiesPanel._container),
-    	decisionRefBinding = domQuery('select[name="decisionRefBinding"]', propertiesPanel._container),
+    	decisionRefBinding = domQuery('select[name="callableBinding"]', propertiesPanel._container),
         businessObject = getBusinessObject(shape);
 
     // given
@@ -144,27 +142,26 @@ describe('decision-business-rule-task-properties', function() {
     TestHelper.triggerEvent(implType, 'change');
 
     // then
-    expect(implType.value).to.equal('decisionRef');
+    expect(implType.value).to.equal('dmn');
     expect(decisionRefBinding.value).to.equal('latest');
     // 'latest' is the default value for decisionRefBinding
     expect(businessObject).not.to.have.property('camunda:decisionRefBinding');
   }));
 
+
   it('should change decision ref binding for an element',
         inject(function(propertiesPanel, selection, elementRegistry) {
-
-    propertiesPanel.attachTo(container);
 
     var shape = elementRegistry.get('BusinessRuleTask_Deployment');
     selection.select(shape);
 
     var implType = domQuery('select[name=implType]', propertiesPanel._container),
-    	decisionRefBinding = domQuery('select[name="decisionRefBinding"]', propertiesPanel._container),
-    	decisionRefVersion = domQuery('input[name=decisionRefVersion]', propertiesPanel._container),
+    	decisionRefBinding = domQuery('select[name="callableBinding"]', propertiesPanel._container),
+    	decisionRefVersion = domQuery('input[name=callableVersion]', propertiesPanel._container),
         businessObject = getBusinessObject(shape);
 
     // given
-    expect(implType.value).to.equal('decisionRef');
+    expect(implType.value).to.equal('dmn');
     expect(decisionRefBinding.value).to.equal('deployment');
     expect(businessObject.get('camunda:decisionRefBinding')).to.equal(decisionRefBinding.value);
     expect(businessObject).not.to.have.property('camunda:decisionRefVersion');
@@ -183,22 +180,21 @@ describe('decision-business-rule-task-properties', function() {
     expect(businessObject.get('camunda:decisionRefVersion')).to.equal(decisionRefVersion.value);
   }));
 
+
   it('remove decision ref version is not necessary for an element',
         inject(function(propertiesPanel, selection, elementRegistry) {
-
-    propertiesPanel.attachTo(container);
 
     var shape = elementRegistry.get('BusinessRuleTask_Version');
     selection.select(shape);
 
     var implType = domQuery('select[name=implType]', propertiesPanel._container),
-        decisionRefBinding = domQuery('select[name="decisionRefBinding"]', propertiesPanel._container),
-        decisionRefVersion = domQuery('input[name=decisionRefVersion]', propertiesPanel._container),
-        decisionRefValue = domQuery('input[name=decisionRefValue]', propertiesPanel._container),
+        decisionRefBinding = domQuery('select[name="callableBinding"]', propertiesPanel._container),
+        decisionRefVersion = domQuery('input[name=callableVersion]', propertiesPanel._container),
+        decisionRefValue = domQuery('input[name=callableElementRef]', propertiesPanel._container),
         businessObject = getBusinessObject(shape);
 
     // given
-    expect(implType.value).to.equal('decisionRef');
+    expect(implType.value).to.equal('dmn');
     expect(decisionRefBinding.value).to.equal('version');
     expect(businessObject.get('camunda:decisionRefBinding')).to.equal(decisionRefBinding.value);
     expect(decisionRefValue.value).to.equal('Bar');
@@ -211,26 +207,25 @@ describe('decision-business-rule-task-properties', function() {
 
     // then
     expect(decisionRefVersion.className).to.equal('invalid');
-    expect(businessObject.get('camunda:decisionRefVersion')).to.equal('12');
+    expect(businessObject.get('camunda:decisionRefVersion')).to.be.undefined;
   }));
+
 
   it('should change implementation type from DMN to Java Class for an element',
         inject(function(propertiesPanel, selection, elementRegistry) {
-
-    propertiesPanel.attachTo(container);
 
     var shape = elementRegistry.get('BusinessRuleTask_Version');
     selection.select(shape);
 
     var implType = domQuery('select[name=implType]', propertiesPanel._container),
-        decisionRefBinding = domQuery('select[name="decisionRefBinding"]', propertiesPanel._container),
-        decisionRefVersion = domQuery('input[name=decisionRefVersion]', propertiesPanel._container),
-        decisionRefValue = domQuery('input[name=decisionRefValue]', propertiesPanel._container),
+        decisionRefBinding = domQuery('select[name="callableBinding"]', propertiesPanel._container),
+        decisionRefVersion = domQuery('input[name=callableVersion]', propertiesPanel._container),
+        decisionRefValue = domQuery('input[name=callableElementRef]', propertiesPanel._container),
         delegateField = domQuery('input[name=delegate]', propertiesPanel._container),
         businessObject = getBusinessObject(shape);
 
     // given
-    expect(implType.value).to.equal('decisionRef');
+    expect(implType.value).to.equal('dmn');
     expect(decisionRefBinding.value).to.equal('version');
     expect(businessObject.get('camunda:decisionRefBinding')).to.equal(decisionRefBinding.value);
     expect(decisionRefValue.value).to.equal('Bar');
@@ -256,16 +251,15 @@ describe('decision-business-rule-task-properties', function() {
     expect(businessObject).not.to.have.property('camunda:mapDecisionResult');
   }));
 
+
   it('should not fetch decision ref properties for a non decision business rule task element',
         inject(function(propertiesPanel, selection, elementRegistry) {
-
-    propertiesPanel.attachTo(container);
 
     var shape = elementRegistry.get('ServiceTask_1');
     selection.select(shape);
 
     var implType = domQuery('select[name=implType]', propertiesPanel._container),
-        resultVariable = domQuery('input[name=resultVariable]', propertiesPanel._container),
+        resultVariable = domQuery('div[data-entry=result-variable] input[name=resultVariable]', propertiesPanel._container),
         businessObject = getBusinessObject(shape);
 
     expect(implType.value).to.not.equal('decisionRef');
@@ -275,21 +269,20 @@ describe('decision-business-rule-task-properties', function() {
     expect(resultVariable.value).to.equal(businessObject.get('camunda:resultVariable'));
   }));
 
+
   it('should remove result variable value for an element',
         inject(function(propertiesPanel, selection, elementRegistry) {
-
-    propertiesPanel.attachTo(container);
 
     var shape = elementRegistry.get('BusinessRuleTask_1');
     selection.select(shape);
 
     var implType = domQuery('select[name=implType]', propertiesPanel._container),
-        resultVariable = domQuery('input[name=dmnResultVariable]', propertiesPanel._container),
-        clearButton = domQuery('[data-entry=implementation] > .pp-row > .pp-field-wrapper > button[data-action=dmn\\.clearResVar]', propertiesPanel._container),
+        resultVariable = domQuery('div[data-entry=dmn-result-variable] input[name=resultVariable]', propertiesPanel._container),
+        clearButton = domQuery('[data-entry=dmn-result-variable] button[data-action=clear]', propertiesPanel._container),
         businessObject = getBusinessObject(shape);
 
     // given
-    expect(implType.value).to.equal('decisionRef');
+    expect(implType.value).to.equal('dmn');
     expect(resultVariable.value).to.equal('resVar');
     expect(resultVariable.value).to.equal(businessObject.get('camunda:resultVariable'));
 
@@ -301,21 +294,20 @@ describe('decision-business-rule-task-properties', function() {
     expect(businessObject).not.to.have.property('camunda:resultVariable');
   }));
 
+
   it('should remove decision ref value field for an element',
         inject(function(propertiesPanel, selection, elementRegistry) {
-
-    propertiesPanel.attachTo(container);
 
     var shape = elementRegistry.get('BusinessRuleTask_1');
     selection.select(shape);
 
     var implType = domQuery('select[name=implType]', propertiesPanel._container),
-        decisionRefField = domQuery('input[name="decisionRefValue"]', propertiesPanel._container),
-        clearButton = domQuery('[data-entry=implementation] > .pp-row > .pp-field-wrapper > button[data-action=dmn\\.clear]', propertiesPanel._container),
+        decisionRefField = domQuery('input[name="callableElementRef"]', propertiesPanel._container),
+        clearButton = domQuery('[data-entry=callable-element-ref] button[data-action=clear]', propertiesPanel._container),
         businessObject = getBusinessObject(shape);
 
     // given
-    expect(implType.value).to.equal('decisionRef');
+    expect(implType.value).to.equal('dmn');
     expect(decisionRefField.value).to.equal('Bar');
     expect(businessObject.get('camunda:decisionRef')).to.equal(decisionRefField.value);
 
@@ -323,28 +315,27 @@ describe('decision-business-rule-task-properties', function() {
     TestHelper.triggerEvent(clearButton, 'click');
 
     // then
-    expect(implType.value).to.equal('decisionRef');
+    expect(implType.value).to.equal('dmn');
     expect(businessObject).to.have.property('decisionRef');
     expect(decisionRefField.className).to.equal('invalid');
   }));
 
+
   it('should remove decision ref version value field for an element',
         inject(function(propertiesPanel, selection, elementRegistry) {
-
-    propertiesPanel.attachTo(container);
 
     var shape = elementRegistry.get('BusinessRuleTask_Version');
     selection.select(shape);
 
     var implType = domQuery('select[name=implType]', propertiesPanel._container),
-        decisionRefBinding = domQuery('select[name=decisionRefBinding]', propertiesPanel._container),
-        decisionRefField = domQuery('input[name="decisionRefValue"]', propertiesPanel._container),
-        decisionRefVersionField = domQuery('input[name="decisionRefVersion"]', propertiesPanel._container),
-        clearButton = domQuery('[data-entry=implementation] > .pp-row > .pp-field-wrapper > button[data-action=dmn\\.clearVersion]', propertiesPanel._container),
+        decisionRefBinding = domQuery('select[name=callableBinding]', propertiesPanel._container),
+        decisionRefField = domQuery('input[name="callableElementRef"]', propertiesPanel._container),
+        decisionRefVersionField = domQuery('input[name="callableVersion"]', propertiesPanel._container),
+        clearButton = domQuery('[data-entry=callable-version] button[data-action=clear]', propertiesPanel._container),
         businessObject = getBusinessObject(shape);
 
     // given
-    expect(implType.value).to.equal('decisionRef');
+    expect(implType.value).to.equal('dmn');
     expect(decisionRefField.value).to.equal('Bar');
     expect(decisionRefBinding.value).to.equal('version');
     expect(decisionRefVersionField.value).to.equal('12');
@@ -356,16 +347,15 @@ describe('decision-business-rule-task-properties', function() {
     TestHelper.triggerEvent(clearButton, 'click');
 
     // then
-    expect(implType.value).to.equal('decisionRef');
+    expect(implType.value).to.equal('dmn');
     expect(businessObject.get('camunda:decisionRef')).to.equal(decisionRefField.value);
     expect(businessObject.get('camunda:decisionRefBinding')).to.equal(decisionRefBinding.value);
     expect(decisionRefVersionField.className).to.equal('invalid');
   }));
 
+
   it('should not fetch map decision result for a business rule task without a result variable',
         inject(function(propertiesPanel, selection, elementRegistry) {
-
-    propertiesPanel.attachTo(container);
 
     var shape = elementRegistry.get('BusinessRuleTask_Version');
     selection.select(shape);
@@ -375,23 +365,22 @@ describe('decision-business-rule-task-properties', function() {
         businessObject = getBusinessObject(shape);
 
     // given
-    expect(mapDecisionResult.parentElement.className).to.contain('pp-hidden');
-    expect(businessObject).not.to.have.property('mapDecisionResult');
+    expect(mapDecisionResult.className).to.contain('pp-hidden');
+    expect(businessObject).to.have.property('mapDecisionResult');
     expect(businessObject).not.to.have.property('resultVariable');
 
   }));
 
+
   it('should fetch map decision result for a business rule task with setting result variable',
         inject(function(propertiesPanel, selection, elementRegistry) {
-
-    propertiesPanel.attachTo(container);
 
     var shape = elementRegistry.get('BusinessRuleTask_1');
     selection.select(shape);
 
     var implType = domQuery('select[name=implType]', propertiesPanel._container),
         mapDecisionResult = domQuery('select[name=mapDecisionResult]', propertiesPanel._container),
-        dmnResultVariableInput = domQuery('input[name=dmnResultVariable]', propertiesPanel._container),
+        dmnResultVariableInput = domQuery('div[data-entry=dmn-result-variable] input[name=resultVariable]', propertiesPanel._container),
         businessObject = getBusinessObject(shape);
 
     // given
@@ -402,21 +391,20 @@ describe('decision-business-rule-task-properties', function() {
 
   }));
 
+
   it('should set map decision result with default value "resultList" when fill result variable',
         inject(function(propertiesPanel, selection, elementRegistry) {
-
-    propertiesPanel.attachTo(container);
 
     var shape = elementRegistry.get('BusinessRuleTask_Version');
     selection.select(shape);
 
     var implType = domQuery('select[name=implType]', propertiesPanel._container),
         mapDecisionResult = domQuery('select[name=mapDecisionResult]', propertiesPanel._container),
-        dmnResultVariableInput = domQuery('input[name=dmnResultVariable]', propertiesPanel._container),
+        dmnResultVariableInput = domQuery('div[data-entry=dmn-result-variable] input[name=resultVariable]', propertiesPanel._container),
         businessObject = getBusinessObject(shape);
 
     // given
-    expect(mapDecisionResult.parentElement.className).to.contain('pp-hidden');
+    expect(mapDecisionResult.className).to.contain('pp-hidden');
     expect(dmnResultVariableInput.value).to.be.empty;
     expect(businessObject).not.to.have.property('camunda:mapDecisionResult');
     expect(businessObject).not.to.have.property('camunda:resultVariable');
@@ -432,18 +420,17 @@ describe('decision-business-rule-task-properties', function() {
 
   }));
 
-  it('should remove map decision result when remove result variable',
-        inject(function(propertiesPanel, selection, elementRegistry) {
 
-    propertiesPanel.attachTo(container);
+  it('should set map decision result to default value when removing result variable',
+        inject(function(propertiesPanel, selection, elementRegistry) {
 
     var shape = elementRegistry.get('BusinessRuleTask_1');
     selection.select(shape);
 
     var implType = domQuery('select[name=implType]', propertiesPanel._container),
         mapDecisionResult = domQuery('select[name=mapDecisionResult]', propertiesPanel._container),
-        dmnResultVariableInput = domQuery('input[name=dmnResultVariable]', propertiesPanel._container),
-        clearButton = domQuery('[data-entry=implementation] > .pp-row > .pp-field-wrapper > button[data-action=dmn\\.clearResVar]', propertiesPanel._container),
+        dmnResultVariableInput = domQuery('div[data-entry=dmn-result-variable] input[name=resultVariable]', propertiesPanel._container),
+        clearButton = domQuery('[data-entry=dmn-result-variable] button[data-action=clear]', propertiesPanel._container),
         businessObject = getBusinessObject(shape);
 
     // given
@@ -456,17 +443,16 @@ describe('decision-business-rule-task-properties', function() {
     TestHelper.triggerEvent(clearButton, 'click');
 
     // then
-    expect(mapDecisionResult.parentElement.className).to.contain('pp-hidden');
+    expect(mapDecisionResult.className).to.contain('pp-hidden');
     expect(dmnResultVariableInput.value).to.be.empty;
-    expect(businessObject.get('camunda:mapDecisionResult')).to.be.undefined;
+    expect(businessObject.get('camunda:mapDecisionResult')).to.equal('resultList');
     expect(businessObject.get('camunda:resultVariable')).to.be.undefined;
 
   }));
 
+
   it('should change map decision result value for a business rule task',
         inject(function(propertiesPanel, selection, elementRegistry) {
-
-    propertiesPanel.attachTo(container);
 
     var shape = elementRegistry.get('BusinessRuleTask_1');
     selection.select(shape);
@@ -489,24 +475,23 @@ describe('decision-business-rule-task-properties', function() {
 
   }));
 
+
   it('should hidden map decision result select box when change implementation type from DMN to Expression for an element',
         inject(function(propertiesPanel, selection, elementRegistry) {
-
-    propertiesPanel.attachTo(container);
 
     var shape = elementRegistry.get('BusinessRuleTask_1');
     selection.select(shape);
 
     var implType = domQuery('select[name=implType]', propertiesPanel._container),
-        decisionRefBinding = domQuery('select[name="decisionRefBinding"]', propertiesPanel._container),
-        decisionRefValue = domQuery('input[name=decisionRefValue]', propertiesPanel._container),
-        dmnResultVariable = domQuery('input[name=dmnResultVariable]', propertiesPanel._container),
+        decisionRefBinding = domQuery('select[name="callableBinding"]', propertiesPanel._container),
+        decisionRefValue = domQuery('input[name=callableElementRef]', propertiesPanel._container),
+        dmnResultVariable = domQuery('div[data-entry=dmn-result-variable] input[name=resultVariable]', propertiesPanel._container),
         mapDecisionResult = domQuery('select[name=mapDecisionResult]', propertiesPanel._container),
         delegateField = domQuery('input[name=delegate]', propertiesPanel._container),
         businessObject = getBusinessObject(shape);
 
     // given
-    expect(implType.value).to.equal('decisionRef');
+    expect(implType.value).to.equal('dmn');
     expect(decisionRefValue.value).to.equal('Bar');
     expect(decisionRefBinding.value).to.equal('latest');
     expect(dmnResultVariable.value).to.equal('resVar');
@@ -527,7 +512,7 @@ describe('decision-business-rule-task-properties', function() {
     expect(implType.value).to.equal('expression');
     expect(delegateField.className).to.equal('invalid');
     expect(dmnResultVariable.parentElement.className).to.contain('pp-hidden');
-    expect(mapDecisionResult.parentElement.className).to.contain('pp-hidden');
+    expect(mapDecisionResult.className).to.contain('pp-hidden');
   }));
 
 });

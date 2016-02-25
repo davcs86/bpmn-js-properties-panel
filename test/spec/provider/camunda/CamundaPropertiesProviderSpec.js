@@ -52,6 +52,7 @@ describe('camunda-properties', function() {
     propertiesPanel.attachTo(container);
   }));
 
+
   it('should hide the job configuration group when all items are hidden or empty',
     inject(function(propertiesPanel, selection, elementRegistry) {
 
@@ -67,12 +68,13 @@ describe('camunda-properties', function() {
     expect(domClasses(group).has('pp-hidden')).to.be.true;
   }));
 
+
   it('should show the job configuration group when there is a non hidden group element',
     inject(function(propertiesPanel, selection, elementRegistry) {
 
       var shape = elementRegistry.get('ServiceTask_1'),
         groupSelector = '[data-group=jobConfigurationGroup]',
-        inputSelector = 'input[name=asyncBefore]';
+        inputSelector = 'div[data-entry=async-before] input[name=asyncBefore]';
 
       // given
       selection.select(shape);

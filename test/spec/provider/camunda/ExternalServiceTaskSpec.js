@@ -36,7 +36,7 @@ describe('external-service-task-properties', function() {
     moddleExtensions: {camunda: camundaModdlePackage}
   }));
 
-  beforeEach(inject(function(commandStack) {
+  beforeEach(inject(function(commandStack, propertiesPanel) {
 
     var undoButton = document.createElement('button');
         undoButton.textContent = 'UNDO';
@@ -46,12 +46,13 @@ describe('external-service-task-properties', function() {
     });
 
     container.appendChild(undoButton);
+
+    propertiesPanel.attachTo(container);
   }));
+
 
   it('should fetch properties of an external service task',
     inject(function(propertiesPanel, selection, elementRegistry) {
-
-    propertiesPanel.attachTo(container);
 
     var shape = elementRegistry.get('ServiceTask_external');
     selection.select(shape);
@@ -60,16 +61,15 @@ describe('external-service-task-properties', function() {
     	implType = TestHelper.selectedByIndex(domQuery('select[name=implType]', propertiesPanel._container)),
       businessObject = getBusinessObject(shape);
 
-    expect(implType.value).to.equal('type');
+    expect(implType.value).to.equal('external');
     expect(topicField.value).to.equal('ShipmentProcessing');
     expect(topicField.value).to.equal(businessObject.get('camunda:topic'));
     expect(businessObject.get('camunda:type')).to.equal('external');
   }));
 
+
   it('should not fetch external task properties of a business rule task',
     inject(function(propertiesPanel, selection, elementRegistry) {
-
-    propertiesPanel.attachTo(container);
 
     var shape = elementRegistry.get('BusinessRuleTask_1');
     selection.select(shape);
@@ -78,17 +78,16 @@ describe('external-service-task-properties', function() {
         implType = TestHelper.selectedByIndex(domQuery('select[name=implType]', propertiesPanel._container)),
         businessObject = getBusinessObject(shape);
 
-    expect(implType.value).to.not.equal('type');
+    expect(implType.value).to.not.equal('external');
     expect(topicField).to.be.null;
-    expect(implType.value).to.equal('decisionRef');
+    expect(implType.value).to.equal('dmn');
     expect(businessObject).not.to.have.property('topic');
     expect(businessObject).not.to.have.property('type');
   }));
 
+
   it('should fill topic property of an external service task',
     inject(function(propertiesPanel, selection, elementRegistry) {
-
-    propertiesPanel.attachTo(container);
 
     var shape = elementRegistry.get('ServiceTask_external');
     selection.select(shape);
@@ -98,7 +97,7 @@ describe('external-service-task-properties', function() {
         businessObject = getBusinessObject(shape);
 
     // given
-    expect(implType.value).to.equal('type');
+    expect(implType.value).to.equal('external');
     expect(topicField.value).to.equal('ShipmentProcessing');
     expect(topicField.value).to.equal(businessObject.get('camunda:topic'));
 
@@ -106,15 +105,14 @@ describe('external-service-task-properties', function() {
     TestHelper.triggerValue(topicField, 'OrderProcessing');
 
     // then
-    expect(implType.value).to.equal('type');
+    expect(implType.value).to.equal('external');
     expect(topicField.value).to.equal('OrderProcessing');
     expect(topicField.value).to.equal(businessObject.get('camunda:topic'));
   }));
 
+
   it('should delete topic property of an external service task',
     inject(function(propertiesPanel, selection, elementRegistry) {
-
-    propertiesPanel.attachTo(container);
 
     var shape = elementRegistry.get('ServiceTask_external');
     selection.select(shape);
@@ -124,7 +122,7 @@ describe('external-service-task-properties', function() {
         businessObject = getBusinessObject(shape);
 
     // given
-    expect(implType.value).to.equal('type');
+    expect(implType.value).to.equal('external');
     expect(topicField.value).to.equal('ShipmentProcessing');
     expect(topicField.value).to.equal(businessObject.get('camunda:topic'));
 
@@ -132,15 +130,14 @@ describe('external-service-task-properties', function() {
     TestHelper.triggerValue(topicField, '');
 
     // then
-    expect(implType.value).to.equal('type');
+    expect(implType.value).to.equal('external');
     expect(topicField.className).to.equal('invalid');
-    expect(businessObject.get('camunda:topic')).to.equal('ShipmentProcessing');
+    expect(businessObject.get('camunda:topic')).to.equal('');
   }));
+
 
   it('should change implementation type from external service task to java class',
     inject(function(propertiesPanel, selection, elementRegistry) {
-
-    propertiesPanel.attachTo(container);
 
     var shape = elementRegistry.get('ServiceTask_external');
     selection.select(shape);
@@ -151,7 +148,7 @@ describe('external-service-task-properties', function() {
         businessObject = getBusinessObject(shape);
 
     // given
-    expect(implType.value).to.equal('type');
+    expect(implType.value).to.equal('external');
     expect(topicField.value).to.equal('ShipmentProcessing');
     expect(topicField.value).to.equal(businessObject.get('camunda:topic'));
     expect(classField.parentElement.className).to.contain('pp-hidden');
@@ -172,10 +169,9 @@ describe('external-service-task-properties', function() {
     expect(businessObject.get('camunda:topic')).to.be.undefined;
   }));
 
+
   it('should change implementation type from expression to external service task',
     inject(function(propertiesPanel, selection, elementRegistry) {
-
-    propertiesPanel.attachTo(container);
 
     var shape = elementRegistry.get('ServiceTask_1');
     selection.select(shape);
@@ -198,7 +194,7 @@ describe('external-service-task-properties', function() {
     TestHelper.triggerValue(topicField, 'OrderProcessing');
 
     // then
-    expect(implType.value).to.equal('type');
+    expect(implType.value).to.equal('external');
     expect(expressionField.parentElement.className).to.contain('pp-hidden');
     expect(topicField.value).to.equal('OrderProcessing');
     expect(businessObject.get('camunda:topic')).to.equal(topicField.value);
@@ -207,10 +203,9 @@ describe('external-service-task-properties', function() {
     expect(businessObject.get('camunda:resultVariable')).to.be.undefined;
   }));
 
+
   it('should not fetch external task properties for a service task with type not equal "external"',
     inject(function(propertiesPanel, selection, elementRegistry) {
-
-    propertiesPanel.attachTo(container);
 
     var shape = elementRegistry.get('ServiceTask_2');
     selection.select(shape);
@@ -222,6 +217,40 @@ describe('external-service-task-properties', function() {
     expect(implType.value).to.equal('');
     expect(topicField.value).to.be.empty;
     expect(businessObject.get('type')).to.be.equal('mail');
+  }));
+
+  it('should exist a camunda:topic element in the business object when changing expression to external service task',
+    inject(function(propertiesPanel, selection, elementRegistry) {
+
+    var shape = elementRegistry.get('ServiceTask_1');
+    selection.select(shape);
+
+    var topicField = domQuery('input[name=externalTopic]', propertiesPanel._container),
+        implType = domQuery('select[name=implType]', propertiesPanel._container),
+        expressionField = domQuery('input[name=delegate]', propertiesPanel._container),
+        businessObject = getBusinessObject(shape);
+
+    // given
+    expect(implType.value).to.equal('expression');
+    expect(topicField.parentElement.className).to.contain('pp-hidden');
+    expect(businessObject.get('camunda:expression')).to.equal(expressionField.value);
+
+    // when
+    // select 'external'
+    implType.options[3].selected = 'selected';
+    TestHelper.triggerEvent(implType, 'change');
+
+    // then
+    expect(implType.value).to.equal('external');
+    expect(expressionField.parentElement.className).to.contain('pp-hidden');
+
+    expect(topicField.value).to.be.empty;
+    expect(topicField.className).to.equal('invalid');
+
+    expect(businessObject.get('camunda:topic')).to.equal('');
+    expect(businessObject.get('camunda:type')).to.equal('external');
+    expect(businessObject.get('camunda:expression')).to.be.undefined;
+    expect(businessObject.get('camunda:resultVariable')).to.be.undefined;
   }));
 
 });
