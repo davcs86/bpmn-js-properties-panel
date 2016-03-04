@@ -1,6 +1,6 @@
 {
   "name": "bpmn-js-properties-panel",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "A simple properties panel for bpmn-js",
   "browserify": {
     "transform": [ "lessify" ]
@@ -60,6 +60,7 @@
     "lessify": "^1.0.1",
     "lodash": "^3.0.1",
     "min-dom": "^0.2.0",
+    "scroll-tabs": "^0.2.1",
     "selection-update": "^0.1.2"
   },
   "peerDependencies": {
