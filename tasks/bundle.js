@@ -2,7 +2,7 @@
 
 var browserify = require('browserify'),
     derequire = require('browserify-derequire'),
-    lessify = require('lessify'),
+    //lessify = require('lessify'),
     UglifyJS = require('uglify-js'),
     collapse = require('bundle-collapser/plugin'),
     concat = require('source-map-concat'),
@@ -113,7 +113,7 @@ module.exports = function(grunt) {
     browserify(browserifyOptions)
       .plugin(derequire)
       .plugin(collapse)
-      .transform(lessify)
+      //.transform(lessify)
       .add(src)
       .bundle(function(err, result) {
 

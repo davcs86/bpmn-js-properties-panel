@@ -2,6 +2,15 @@
   "name": "bpmn-js-properties-panel",
   "version": "0.1.0",
   "dependencies": {
+    "browserify": {
+        "version": "^13.0.0"
+    },
+    "browserify-derequire": {
+       "version": "^0.9.4"
+    },
+    "bundle-collapser": {
+       "version": "^1.2.1"
+    },
     "selection-update": {
       "version": "0.1.2"
     },
@@ -9,7 +18,12 @@
       "version": "camunda/camunda-bpmn-moddle"
     },
     "scroll-tabs": {
-      "version": "0.2.1"
+      "version": "davcs86/scroll-tabs",
+      "dependencies": {
+        "events": {
+          "version": "1.1.0"
+        }
+      }
     },
     "bpmn-js": {
       "version": "bpmn-io/bpmn-js",
