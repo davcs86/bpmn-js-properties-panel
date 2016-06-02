@@ -1,3 +1,5 @@
+> **IMPORTANT!** This is an un-synced and customized version of bpmn-js-properties-panel extension. I strongly recommend to use the [official repository](https://github.com/bpmn-io/bpmn-js-properties-panel)   
+
 # bpmn-js-properties-panel
 
 [![Build Status](https://travis-ci.org/bpmn-io/bpmn-js-properties-panel.svg?branch=master)](https://travis-ci.org/bpmn-io/bpmn-js-properties-panel)
